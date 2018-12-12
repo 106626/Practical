@@ -1,0 +1,83 @@
+
+import  json
+import requests
+import base64
+class PhotoID:
+  request_url = "https://aip.baidubce.com/rest/2.0/face/v3/match"
+  access_token='24.78008b997a495d0448dc093ef27f812b.2592000.1546491467.282335-10890686'
+  def __init__(self,img_1,img_2):
+    self.img_1=img_1
+    self.img_2=img_2
+  def Requ(self):
+              
+        with open(self.img_1, "rb") as f:
+           base64_data = base64.b64encode(f.read())
+           f.close()
+        with open(self.img_2, "rb") as f:
+            base64_data_1 = base64.b64encode(f.read())
+            f.close()
+        params = json.dumps([{"image": str(base64_data,'utf-8'), "image_type": "BASE64", "face_type": "LIVE", "quality_control": "LOW"},{"image":str(base64_data_1,'utf-8') , "image_type": "BASE64", "face_type": "CERT", "quality_control": "LOW"}])
+        url = self.request_url + "?access_token=" + self.access_token
+        headers={'Content-Type': 'application/json'}
+        response=requests.post(url,data=params,headers=headers)
+        content = response.text
+        content=json.loads(content)
+        if content:
+          try:
+            if content['result']['score']>89:
+              return 1
+            else:
+             return 2
+          except:
+             return 3
+       
+
+
+
+def IDcard (request):
+   if request.method=='POST':
+     token=request.POST.get('token')
+     file=request.FILES.get('file')
+     PasswordClass=Password_module('0')
+     phone=PasswordClass.checkToken(token)
+     
+     Tell=models.FastFood.objects.filter(phon=phone,sty='0').first()
+     print(Tell,phone)
+     if phone!=0 and Tell!=None:
+        images=[]
+        if not os.path.exists(settings.MEDIA_ROOT):
+                 os.makedirs(settings.MEDIA_ROOT)
+        extension=os.path.splitext(file.name)[1] #获取文件后缀名
+        file_name='{}{}'.format(uuid.uuid4(),extension)#从命名
+        file_path='{}{}'.format(settings.MEDIA_ROOT,file_name)#文件路径
+        images.append('{}{}'.format(settings.MEDIA_URL,file_name))
+        with open (file_path,'wb') as f:
+            for c in file.chunks():
+                    f.write(c)
+        models.FastFood.objects.filter(phon=phone).update(imgs_1=images)
+        img_2=images
+        a=models.FastFood.objects.filter(phon=phone).select_related()
+        for i in a:
+              img_1=i.imgs
+        print(img_1,img_2,333333333)
+        stay=PhotoID(img_1,img_2)
+        susses=stay.Requ()
+        if susses==1:
+           models.FastFood.objects.get(phon=phone,password=possword,Name=Name,StudentToken=token).update(sty='1')
+           Name=models.FastFood.objects.get(phon=phone,password=possword).select_related().Name
+           #appid=1400112426
+           #appkey="e8100999c3d47a649e25ce678202825e"
+           #phone_numbers=[phone]
+           #template_id=242076
+           #sms_sign="两人随纪"
+           #ssender = SmsSingleSender(appid, appkey)
+           #params=[]
+           #params.append(Name)
+           #result = ssender.send_with_param(86, phone_numbers[0],
+           #template_id, params, sign=sms_sign, extend="", ext="")
+           return HttpResponse('ok')
+        else:
+          return HttpResponse('no')
+     else:
+        return  HttpResponse('no') 
+
